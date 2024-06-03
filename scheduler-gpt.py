@@ -37,13 +37,49 @@ def parse_input(filename):
             elif directive == 'process':
                 # Parsing each process detail
                 _, _, name, _, arrival, _, burst = parts
-                processes.append(Process(name, arrival, burst))            
+                processes.append(Process(name, int(arrival), int(burst)))            
     
     return processes, algorithm, quantum, total_run_time
 
-def fifo_scheduler(processes):
-    # Implement FIFO scheduling
-    pass
+def fifo_scheduler(processes, total_run_time):
+    # Sort processes based on their arrival time
+    processes.sort(key=lambda x: x.arrival)
+    
+    current_time = 0
+    events = []
+
+    for process in processes:
+        if current_time < process.arrival:
+            # CPU is idle until the next process arrives
+            events.append(f"Time {current_time} : Idle")
+            current_time = process.arrival
+
+        # Start the process if it arrives
+        if current_time >= process.arrival:
+            process.start_time = current_time
+            process.response_time = current_time - process.arrival
+            events.append(f"Time {process.arrival} : {process.name} arrived")
+            events.append(f"Time {current_time} : {process.name} selected (burst {process.burst})")
+            
+            # Update current time after the process finishes
+            current_time += process.burst
+            process.finish_time = current_time
+            
+            # Process has finished execution
+            events.append(f"Time {process.finish_time} : {process.name} finished")
+    
+    # Calculate waiting, response, and turnaround times
+    for process in processes:
+        process.turnaround_time = process.finish_time - process.arrival
+        process.waiting_time = process.start_time - process.arrival
+    
+    # Append final time
+    while current_time < total_run_time:
+        events.append(f"Time {current_time} : Idle")
+        current_time += 1
+    events.append(f"Finished at time {current_time}")
+    
+    return events
 
 def sjf_preemptive_scheduler(processes):
     # Implement Preemptive SJF scheduling
@@ -59,19 +95,29 @@ def calculate_metrics(processes):
 
 #
 #TODO: change output. For now it just printed the input file for testing purpose
-def output_results(processes, algorithm, quantum, total_run_time):
-    # Format and output the results to a file
-    processCounts = len(processes)
-    print(f"{processCounts} processes")
-    print(f"Algorithm: {algorithm}, Quantum: {quantum}, Total run time: {total_run_time}")
-    for process in processes:
-        print(f"Process {process.name}: Arrival {process.arrival}, Burst {process.burst}")    
+def output_results(processes, algorithm, events, output_filename):
+    len_processes = len(processes)
+    print(f"{len_processes} processes")
+    print_type_schedulers(algorithm)
+    for event in events:
+        print(event)
+
+def print_type_schedulers(algorithm):
+    if algorithm == 'fcfs':
+        print("Using First-Come First-Served (FCFS)")
+    elif algorithm == 'sjf':
+        print("Using Shortest Job First (SJF)")
+    elif algorithm == 'rr':
+        print("Using Round Robin (RR)")
+    else:
+        print("Unknown algorithm")
+    
 
 def main(input_filename):
     processes, algorithm, quantum, total_run_time = parse_input(input_filename)
  
     if algorithm == 'fcfs':
-        fifo_scheduler(processes)
+        events = fifo_scheduler(processes, total_run_time)
     elif algorithm == 'sjf':
         sjf_preemptive_scheduler(processes)
     elif algorithm == 'rr':
@@ -85,7 +131,8 @@ def main(input_filename):
     #TODO: check assignment requirement
     output_filename = input_filename.replace('.in', '.out')
     
-    output_results(processes, algorithm, quantum, output_filename)
+    output_results(processes, algorithm, events, output_filename)
+    
 
 if __name__ == '__main__':
     import sys
