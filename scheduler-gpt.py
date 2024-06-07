@@ -89,39 +89,47 @@ def calculate_metrics(processes):
     # Calculate metrics for all processes
     pass
 
-#
-#TODO: change output. For now it just printed the input file for testing purpose
+
 def output_results(processes, algorithm, events, output_filename):
     len_processes = len(processes)
-    print(f"{len_processes} processes")
-    print_type_schedulers(algorithm)
     
-    # Sort events by time before printing if needed
-    def extract_time(event):
-        try:
-            return int(event.split()[1])
-        except (IndexError, ValueError):
-            # Handle unexpected format
-            # print(f"Unexpected event format: {event}")
-            return float('inf')  # Push unexpected formats to the end
-    
-    sorted_events = sorted(events, key=extract_time)
-    for event in sorted_events:
-        print(event)
-    
-    # Print metrics after events
-    for process in processes:
-        print(f"{process.name} wait {process.waiting_time} turnaround {process.turnaround_time} response {process.response_time}")
+    with open(output_filename, 'w') as f:
+        f.write(f"{len_processes} processes\n")
+        #human code:
+        type_scheduler = print_type_schedulers(algorithm)
+        ####
+        f.write(f"{type_scheduler}\n")
+        
+        # Sort events by time before printing if needed
+        def extract_time(event):
+            try:
+                return int(event.split()[1])
+            except (IndexError, ValueError):
+                # Handle unexpected format
+                print(f"Unexpected event format: {event}")
+                return float('inf')  # Push unexpected formats to the end
+        
+        sorted_events = sorted(events, key=extract_time)
+        for event in sorted_events:
+            f.write(event + '\n')
+        
+        f.write("\n")
+        #Sort the process in order
+        processes = sorted(processes, key=lambda processes: processes.name)
+        # Print metrics after events
+        for process in processes:
+            f.write(f"{process.name} wait {process.waiting_time} turnaround {process.turnaround_time} response {process.response_time}\n")
+
 
 def print_type_schedulers(algorithm):
     if algorithm == 'fcfs':
-        print("Using First-Come First-Served (FCFS)")
+        return("Using First-Come First-Served (FCFS)")
     elif algorithm == 'sjf':
-        print("Using Shortest Job First (SJF)")
+        return("Using Shortest Job First (SJF)")
     elif algorithm == 'rr':
-        print("Using Round Robin (RR)")
+        return("Using Round Robin (RR)")
     else:
-        print("Unknown algorithm")
+        return("Unknown algorithm")
     
 
 def main(input_filename):
@@ -138,9 +146,8 @@ def main(input_filename):
         round_robin_scheduler(processes, quantum)
     calculate_metrics(processes)
     
-    #do we need to change the input file to become output file or we need to create a new output file? 
-    #TODO: check assignment requirement
-    output_filename = input_filename.replace('.in', '.out')
+    #TODO: change to out when submitting, keep out2 for testing
+    output_filename = input_filename.replace('.in', '.out2')
     
     output_results(processes, algorithm, events, output_filename)
     
