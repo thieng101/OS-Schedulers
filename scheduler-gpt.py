@@ -1,3 +1,4 @@
+#Team Member: Hong Thy Nguyen
 class Process:
     def __init__(self, name, arrival, burst):
         self.name = name
@@ -42,38 +43,33 @@ def parse_input(filename):
     return processes, algorithm, quantum, total_run_time
 
 def fifo_scheduler(processes, total_run_time):
-    # Sort processes based on their arrival time
     processes.sort(key=lambda x: x.arrival)
-    
     current_time = 0
     events = []
 
     for process in processes:
         if current_time < process.arrival:
-            # CPU is idle until the next process arrives
-            events.append(f"Time {current_time} : Idle")
-            current_time = process.arrival
+            # Log idle until the process arrives if there is a gap
+            while current_time < process.arrival:
+                events.append(f"Time {current_time} : Idle")
+                current_time += 1
 
-        # Start the process if it arrives
-        if current_time >= process.arrival:
-            process.start_time = current_time
-            process.response_time = current_time - process.arrival
-            events.append(f"Time {process.arrival} : {process.name} arrived")
-            events.append(f"Time {current_time} : {process.name} selected (burst {process.burst})")
-            
-            # Update current time after the process finishes
-            current_time += process.burst
-            process.finish_time = current_time
-            
-            # Process has finished execution
-            events.append(f"Time {process.finish_time} : {process.name} finished")
-    
-    # Calculate waiting, response, and turnaround times
-    for process in processes:
+        # Log arrival and selection
+        events.append(f"Time {process.arrival} : {process.name} arrived")
+        events.append(f"Time {current_time} : {process.name} selected (burst {process.burst})")
+        process.start_time = current_time
+        process.response_time = current_time - process.arrival
+        
+        # Update current time after the process finishes
+        current_time += process.burst
+        process.finish_time = current_time
         process.turnaround_time = process.finish_time - process.arrival
         process.waiting_time = process.start_time - process.arrival
+        
+        # Log process completion
+        events.append(f"Time {process.finish_time} : {process.name} finished")
     
-    # Append final time
+    # Log final idle time if necessary
     while current_time < total_run_time:
         events.append(f"Time {current_time} : Idle")
         current_time += 1
@@ -99,8 +95,23 @@ def output_results(processes, algorithm, events, output_filename):
     len_processes = len(processes)
     print(f"{len_processes} processes")
     print_type_schedulers(algorithm)
-    for event in events:
+    
+    # Sort events by time before printing if needed
+    def extract_time(event):
+        try:
+            return int(event.split()[1])
+        except (IndexError, ValueError):
+            # Handle unexpected format
+            # print(f"Unexpected event format: {event}")
+            return float('inf')  # Push unexpected formats to the end
+    
+    sorted_events = sorted(events, key=extract_time)
+    for event in sorted_events:
         print(event)
+    
+    # Print metrics after events
+    for process in processes:
+        print(f"{process.name} wait {process.waiting_time} turnaround {process.turnaround_time} response {process.response_time}")
 
 def print_type_schedulers(algorithm):
     if algorithm == 'fcfs':
