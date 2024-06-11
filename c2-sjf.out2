@@ -1,12 +1,12 @@
 2 processes
-Using First-Come First-Served (FCFS)
+Using Preemptive Shortest Job First
 Time 0 : P1 arrived
-Time 0 : P1 selected (burst 5)
+Time 0 : P1 selected (remaining 5)
 Time 5 : P1 finished
 Time 5 : Idle
 Time 6 : Idle
 Time 7 : P2 arrived
-Time 7 : P2 selected (burst 9)
+Time 7 : P2 selected (remaining 9)
 Time 16 : P2 finished
 Time 16 : Idle
 Time 17 : Idle

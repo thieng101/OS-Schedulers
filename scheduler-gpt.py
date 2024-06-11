@@ -1,4 +1,5 @@
 #Team Member: Hong Thy Nguyen
+import heapq
 class Process:
     def __init__(self, name, arrival, burst):
         self.name = name
@@ -77,17 +78,72 @@ def fifo_scheduler(processes, total_run_time):
     
     return events
 
-def sjf_preemptive_scheduler(processes):
+def sjf_preemptive_scheduler(processes, total_run_time):
     # Implement Preemptive SJF scheduling
-    pass
+    #import heapq
+
+    current_time = 0
+    events = []
+    ready_queue = []
+    current_process = None
+    process_index = 0
+    processes.sort(key=lambda x: (x.arrival, x.burst))  # Sort primarily by arrival, secondarily by burst time
+
+    while current_time < total_run_time:
+        # Check for new arriving processes and add them to the queue
+        while process_index < len(processes) and processes[process_index].arrival <= current_time:
+            process = processes[process_index]
+            heapq.heappush(ready_queue, (process.remaining_burst, process.arrival, process))
+            events.append(f"Time {current_time} : {process.name} arrived")
+            process_index += 1
+
+        # If current process finishes
+        if current_process and current_process.remaining_burst <= 0:
+            events.append(f"Time {current_time} : {current_process.name} finished")
+            current_process.finish_time = current_time
+            current_process = None
+
+        # If no current process or preemption is needed
+        if not current_process or (ready_queue and ready_queue[0][0] < current_process.remaining_burst):
+            if current_process:
+                heapq.heappush(ready_queue, (current_process.remaining_burst, current_process.arrival, current_process))
+            if ready_queue:
+                _, _, current_process = heapq.heappop(ready_queue)
+                if current_process.start_time is None or current_process.start_time > current_time:
+                    current_process.start_time = current_time
+                    current_process.response_time = current_time - current_process.arrival
+                events.append(f"Time {current_time} : {current_process.name} selected (remaining {current_process.remaining_burst})")
+
+        # Increment time if there is a current process
+        if current_process:
+            current_process.remaining_burst -= 1
+
+        # Idle if no current process and no pending process in the queue
+        if not current_process and not ready_queue:
+            events.append(f"Time {current_time} : Idle")
+
+        current_time += 1
+
+    # Ensure to log finishing time at the end of the simulation
+    events.append(f"Finished at time {current_time}")
+
+    return events
 
 def round_robin_scheduler(processes, quantum):
     # Implement Round Robin scheduling
     pass
 
 def calculate_metrics(processes):
-    # Calculate metrics for all processes
-    pass
+    for process in processes:
+        if process.finish_time is None:
+            process.turnaround_time = None
+            process.waiting_time = None
+            process.response_time = None
+        else:
+            process.turnaround_time = process.finish_time - process.arrival
+            process.waiting_time = process.turnaround_time - process.burst
+            if process.start_time is not None:
+                process.response_time = process.start_time - process.arrival
 
 
 def output_results(processes, algorithm, events, output_filename):
@@ -125,7 +181,7 @@ def print_type_schedulers(algorithm):
     if algorithm == 'fcfs':
         return("Using First-Come First-Served (FCFS)")
     elif algorithm == 'sjf':
-        return("Using Shortest Job First (SJF)")
+        return("Using Preemptive Shortest Job First")
     elif algorithm == 'rr':
         return("Using Round Robin (RR)")
     else:
@@ -138,7 +194,7 @@ def main(input_filename):
     if algorithm == 'fcfs':
         events = fifo_scheduler(processes, total_run_time)
     elif algorithm == 'sjf':
-        sjf_preemptive_scheduler(processes)
+        events = sjf_preemptive_scheduler(processes, total_run_time)
     elif algorithm == 'rr':
         if quantum is None:
             print("Error: Missing quantum parameter when use is 'rr'")
