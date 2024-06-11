@@ -1,3 +1,5 @@
+#Team Member: Hong Thy Nguyen
+import heapq
 class Process:
     def __init__(self, name, arrival, burst):
         self.name = name
@@ -39,17 +41,95 @@ def parse_input(filename):
             elif directive == 'process':
                 # Parsing each process detail
                 _, _, name, _, arrival, _, burst = parts
-                processes.append(Process(name, int(arrival), int(burst)))           
+                processes.append(Process(name, int(arrival), int(burst)))            
     
     return processes, algorithm, quantum, total_run_time
 
-def fifo_scheduler(processes):
-    # Implement FIFO scheduling
-    pass
+def fifo_scheduler(processes, total_run_time):
+    processes.sort(key=lambda x: x.arrival)
+    current_time = 0
+    events = []
 
-def sjf_preemptive_scheduler(processes):
+    for process in processes:
+        if current_time < process.arrival:
+            # Log idle until the process arrives if there is a gap
+            while current_time < process.arrival:
+                events.append(f"Time {current_time} : Idle")
+                current_time += 1
+
+        # Log arrival and selection
+        events.append(f"Time {process.arrival} : {process.name} arrived")
+        events.append(f"Time {current_time} : {process.name} selected (burst {process.burst})")
+        process.start_time = current_time
+        process.response_time = current_time - process.arrival
+        
+        # Update current time after the process finishes
+        current_time += process.burst
+        process.finish_time = current_time
+        process.turnaround_time = process.finish_time - process.arrival
+        process.waiting_time = process.start_time - process.arrival
+        
+        # Log process completion
+        events.append(f"Time {process.finish_time} : {process.name} finished")
+    
+    # Log final idle time if necessary
+    while current_time < total_run_time:
+        events.append(f"Time {current_time} : Idle")
+        current_time += 1
+    events.append(f"Finished at time {current_time}")
+    
+    return events
+
+def sjf_preemptive_scheduler(processes, total_run_time):
     # Implement Preemptive SJF scheduling
-    pass
+    #import heapq
+
+    current_time = 0
+    events = []
+    ready_queue = []
+    current_process = None
+    process_index = 0
+    processes.sort(key=lambda x: (x.arrival, x.burst))  # Sort primarily by arrival, secondarily by burst time
+
+    while current_time < total_run_time:
+        # Check for new arriving processes and add them to the queue
+        while process_index < len(processes) and processes[process_index].arrival <= current_time:
+            process = processes[process_index]
+            heapq.heappush(ready_queue, (process.remaining_burst, process.arrival, process))
+            events.append(f"Time {current_time} : {process.name} arrived")
+            process_index += 1
+
+        # If current process finishes
+        if current_process and current_process.remaining_burst <= 0:
+            events.append(f"Time {current_time} : {current_process.name} finished")
+            current_process.finish_time = current_time
+            current_process = None
+
+        # If no current process or preemption is needed
+        if not current_process or (ready_queue and ready_queue[0][0] < current_process.remaining_burst):
+            if current_process:
+                heapq.heappush(ready_queue, (current_process.remaining_burst, current_process.arrival, current_process))
+            if ready_queue:
+                _, _, current_process = heapq.heappop(ready_queue)
+                if current_process.start_time is None or current_process.start_time > current_time:
+                    current_process.start_time = current_time
+                    current_process.response_time = current_time - current_process.arrival
+                events.append(f"Time {current_time} : {current_process.name} selected (remaining {current_process.remaining_burst})")
+
+        # Increment time if there is a current process
+        if current_process:
+            current_process.remaining_burst -= 1
+
+        # Idle if no current process and no pending process in the queue
+        if not current_process and not ready_queue:
+            events.append(f"Time {current_time} : Idle")
+
+        current_time += 1
+
+    # Ensure to log finishing time at the end of the simulation
+    events.append(f"Finished at time {current_time}")
+
+    return events
 
 def round_robin_scheduler(processes, quantum):
     # Implement Round Robin scheduling
@@ -92,26 +172,67 @@ def round_robin_scheduler(processes, quantum):
             process.waiting_time = process.turnaround_time - process.burst
 
 def calculate_metrics(processes):
-    # Calculate metrics for all processes
-    pass
-
-#
-#TODO: change output. For now it just printed the input file for testing purpose
-def output_results(processes, algorithm, quantum, total_run_time):
-    # Format and output the results to a file
-    processCounts = len(processes)
-    print(f"{processCounts} processes")
-    print(f"Algorithm: {algorithm}, Quantum: {quantum}, Total run time: {total_run_time}")
     for process in processes:
-        print(f"Process {process.name}: Arrival {process.arrival}, Burst {process.burst}")    
+        if process.finish_time is None:
+            process.turnaround_time = None
+            process.waiting_time = None
+            process.response_time = None
+        else:
+            process.turnaround_time = process.finish_time - process.arrival
+            process.waiting_time = process.turnaround_time - process.burst
+            if process.start_time is not None:
+                process.response_time = process.start_time - process.arrival
+
+
+def output_results(processes, algorithm, events, output_filename):
+    len_processes = len(processes)
+    
+    with open(output_filename, 'w') as f:
+        f.write(f"{len_processes} processes\n")
+        #human code:
+        type_scheduler = print_type_schedulers(algorithm)
+        ####
+        f.write(f"{type_scheduler}\n")
+        
+        # Sort events by time before printing if needed
+        def extract_time(event):
+            try:
+                return int(event.split()[1])
+            except (IndexError, ValueError):
+                # Handle unexpected format
+                print(f"Unexpected event format: {event}")
+                return float('inf')  # Push unexpected formats to the end
+        
+        sorted_events = sorted(events, key=extract_time)
+        for event in sorted_events:
+            f.write(event + '\n')
+        
+        f.write("\n")
+        #Sort the process in order
+        processes = sorted(processes, key=lambda processes: processes.name)
+        # Print metrics after events
+        for process in processes:
+            f.write(f"{process.name} wait {process.waiting_time} turnaround {process.turnaround_time} response {process.response_time}\n")
+
+
+def print_type_schedulers(algorithm):
+    if algorithm == 'fcfs':
+        return("Using First-Come First-Served (FCFS)")
+    elif algorithm == 'sjf':
+        return("Using Preemptive Shortest Job First")
+    elif algorithm == 'rr':
+        return("Using Round Robin (RR)")
+    else:
+        return("Unknown algorithm")
+    
 
 def main(input_filename):
     processes, algorithm, quantum, total_run_time = parse_input(input_filename)
  
     if algorithm == 'fcfs':
-        fifo_scheduler(processes)
+        events = fifo_scheduler(processes, total_run_time)
     elif algorithm == 'sjf':
-        sjf_preemptive_scheduler(processes)
+        events = sjf_preemptive_scheduler(processes, total_run_time)
     elif algorithm == 'rr':
         if quantum is None:
             print("Error: Missing quantum parameter when use is 'rr'")
@@ -119,11 +240,11 @@ def main(input_filename):
         round_robin_scheduler(processes, quantum)
     calculate_metrics(processes)
     
-    #do we need to change the input file to become output file or we need to create a new output file? 
-    #TODO: check assignment requirement
-    output_filename = input_filename.replace('.in', '.out')
+    #TODO: change to out when submitting, keep out2 for testing
+    output_filename = input_filename.replace('.in', '.out2')
     
-    output_results(processes, algorithm, quantum, output_filename)
+    output_results(processes, algorithm, events, output_filename)
+    
 
 if __name__ == '__main__':
     import sys
