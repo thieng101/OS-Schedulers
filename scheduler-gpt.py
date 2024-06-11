@@ -16,6 +16,8 @@ def parse_input(filename):
     processes = []
     algorithm = ''
     quantum = None
+    total_run_time = 0
+    
     with open(filename, 'r') as file:
         for line in file:
             line = line.strip()
@@ -131,7 +133,43 @@ def sjf_preemptive_scheduler(processes, total_run_time):
 
 def round_robin_scheduler(processes, quantum):
     # Implement Round Robin scheduling
-    pass
+    queue = []
+    current_time = 0
+    completed = 0
+    n = len(processes)
+
+    processes.sort(key=lambda x: x.arrival)
+    queue.append(processes[0])
+    processes = processes[1:]
+
+    while completed < n:
+        if not queue:
+            if processes:
+                next_process = processes.pop(0)
+                current_time = max(current_time, next_process.arrival)
+                queue.append(next_process)
+            continue
+
+        process = queue.pop(0)
+
+        if process.start_time is None:
+            process.start_time = current_time
+            process.response_time = current_time - process.arrival
+
+        time_slice = min(quantum, process.remaining_burst)
+        current_time += time_slice
+        process.remaining_burst -= time_slice
+
+        while processes and processes[0].arrival <= current_time:
+            queue.append(processes.pop(0))
+
+        if process.remaining_burst > 0:
+            queue.append(process)
+        else:
+            completed += 1
+            process.finish_time = current_time
+            process.turnaround_time = process.finish_time - process.arrival
+            process.waiting_time = process.turnaround_time - process.burst
 
 def calculate_metrics(processes):
     for process in processes:
