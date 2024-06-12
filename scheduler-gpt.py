@@ -131,24 +131,36 @@ def sjf_preemptive_scheduler(processes, total_run_time):
 
     return events
 
-def round_robin_scheduler(processes, quantum):
-    # Implement Round Robin scheduling
+
+def round_robin_scheduler(processes, quantum, total_run_time):
     queue = []
     current_time = 0
     completed = 0
     n = len(processes)
+    time_log = []
 
     processes.sort(key=lambda x: x.arrival)
-    queue.append(processes[0])
-    processes = processes[1:]
+    
+    process_index = 0
 
-    while completed < n:
+    while completed < n and current_time < total_run_time:
+        # Add new processes to the ready queue as they arrive
+        while process_index < len(processes) and processes[process_index].arrival <= current_time:
+            process = processes[process_index]
+            queue.append(process)
+            time_log.append(f"Time {current_time} : {process.name} arrived")
+            process_index += 1
+
         if not queue:
-            if processes:
-                next_process = processes.pop(0)
-                current_time = max(current_time, next_process.arrival)
-                queue.append(next_process)
-            continue
+            if process_index < len(processes):
+                next_process = processes[process_index]
+                idle_time = next_process.arrival - current_time
+                for _ in range(idle_time):
+                    time_log.append(f"Time {current_time} : Idle")
+                    current_time += 1
+                continue
+            else:
+                break
 
         process = queue.pop(0)
 
@@ -157,11 +169,21 @@ def round_robin_scheduler(processes, quantum):
             process.response_time = current_time - process.arrival
 
         time_slice = min(quantum, process.remaining_burst)
-        current_time += time_slice
-        process.remaining_burst -= time_slice
+        time_log.append(f"Time {current_time} : {process.name} selected (burst {process.remaining_burst})")
 
-        while processes and processes[0].arrival <= current_time:
-            queue.append(processes.pop(0))
+        for _ in range(time_slice):
+            current_time += 1
+            process.remaining_burst -= 1
+
+            # Check for arriving processes during time slice
+            while process_index < len(processes) and processes[process_index].arrival <= current_time:
+                arrived_process = processes[process_index]
+                queue.append(arrived_process)
+                time_log.append(f"Time {current_time} : {arrived_process.name} arrived")
+                process_index += 1
+
+            if process.remaining_burst == 0:
+                break
 
         if process.remaining_burst > 0:
             queue.append(process)
@@ -170,6 +192,15 @@ def round_robin_scheduler(processes, quantum):
             process.finish_time = current_time
             process.turnaround_time = process.finish_time - process.arrival
             process.waiting_time = process.turnaround_time - process.burst
+            time_log.append(f"Time {current_time} : {process.name} finished")
+
+    # Append any remaining idle time till the total run time
+    while current_time < total_run_time:
+        time_log.append(f"Time {current_time} : Idle")
+        current_time += 1
+
+    time_log.append(f"Finished at time {current_time}")
+    return time_log
 
 def calculate_metrics(processes):
     for process in processes:
@@ -184,7 +215,7 @@ def calculate_metrics(processes):
                 process.response_time = process.start_time - process.arrival
 
 
-def output_results(processes, algorithm, events, output_filename):
+def output_results(processes, algorithm, events, output_filename, quantum):
     len_processes = len(processes)
     
     with open(output_filename, 'w') as f:
@@ -194,6 +225,9 @@ def output_results(processes, algorithm, events, output_filename):
         ####
         f.write(f"{type_scheduler}\n")
         
+        if quantum:
+            f.write(f"Quantum {quantum}\n")
+            
         # Sort events by time before printing if needed
         def extract_time(event):
             try:
@@ -228,7 +262,7 @@ def print_type_schedulers(algorithm):
 
 def main(input_filename):
     processes, algorithm, quantum, total_run_time = parse_input(input_filename)
- 
+    
     if algorithm == 'fcfs':
         events = fifo_scheduler(processes, total_run_time)
     elif algorithm == 'sjf':
@@ -237,13 +271,13 @@ def main(input_filename):
         if quantum is None:
             print("Error: Missing quantum parameter when use is 'rr'")
             return
-        round_robin_scheduler(processes, quantum)
+        events = round_robin_scheduler(processes, quantum, total_run_time)
     calculate_metrics(processes)
     
     #TODO: change to out when submitting, keep out2 for testing
     output_filename = input_filename.replace('.in', '.out2')
     
-    output_results(processes, algorithm, events, output_filename)
+    output_results(processes, algorithm, events, output_filename, quantum)
     
 
 if __name__ == '__main__':
