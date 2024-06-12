@@ -1,6 +1,6 @@
 2 processes
-Using quantum 2
 Using Round Robin (RR)
+Quantum 2
 Time 0 : P2 arrived
 Time 0 : P2 selected (burst 9)
 Time 2 : P2 selected (burst 7)
