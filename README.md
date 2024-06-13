@@ -22,3 +22,12 @@ This project simulates different process scheduling algorithms including First-C
   Tkinter is included with Python on macOS by default. If you encounter any issues, you can install Tkinter via Homebrew:
   ```bash
   brew install python-tk
+
+- **On Windows**:
+  Tkinter is included with the standard Python distribution. If you encounter any issues, make sure you have Python installed correctly from python.org.
+
+## Usage
+1.Clone the repository:
+git clone https://github.com/your-repo/process-scheduler.git
+cd process-scheduler
+
