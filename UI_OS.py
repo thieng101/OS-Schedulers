@@ -213,7 +213,7 @@ def run_scheduler(input_filename):
 def display_results_in_table(results):
     root = tk.Tk()
     root.title("Scheduling Results")
-    root.geometry("800x600")
+    root.geometry("1400x600")
 
     notebook = ttk.Notebook(root)
     notebook.pack(expand=1, fill="both")
@@ -237,6 +237,14 @@ def display_results_in_table(results):
 
         process_tree = ttk.Treeview(frame, columns=("Name", "Arrival", "Burst", "Start", "Finish", "Response", "Waiting", "Turnaround"), show='headings')
         process_tree.pack(side=tk.RIGHT, expand=1, fill='both')
+        process_tree.column("Name", width = 100);
+        process_tree.column("Arrival", width = 100);
+        process_tree.column("Burst", width = 100);
+        process_tree.column("Start", width = 100);
+        process_tree.column("Finish", width = 100);
+        process_tree.column("Response", width = 100);
+        process_tree.column("Waiting", width = 100);
+        process_tree.column("Turnaround", width = 100);
 
         for col in process_tree['columns']:
             process_tree.heading(col, text=col)
@@ -258,7 +266,7 @@ def main():
     except ValueError as e:
         messagebox.showerror("Error", str(e))
         return
-
+    
     results = {
         algorithm: (processes, events, quantum)
     }

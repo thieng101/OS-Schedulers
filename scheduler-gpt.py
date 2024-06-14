@@ -50,6 +50,9 @@ def fifo_scheduler(processes, total_run_time):
     current_time = 0
     events = []
 
+    # Human Code:
+    # The processes are sorted by arrival time before being sent to the scheduler
+    # If no process has arrived yet, we have to wait
     for process in processes:
         if current_time < process.arrival:
             # Log idle until the process arrives if there is a gap
@@ -221,12 +224,17 @@ def output_results(processes, algorithm, events, output_filename, quantum):
     with open(output_filename, 'w') as f:
         f.write(f"{len_processes} processes\n")
         #human code:
+        print(f"{len_processes} processes")
         type_scheduler = print_type_schedulers(algorithm)
+        print(f"{type_scheduler}")
         ####
         f.write(f"{type_scheduler}\n")
         
+        
         if quantum:
             f.write(f"Quantum {quantum}\n")
+            #Human Code:
+            print(f"Quantum {quantum}\n")
             
         # Sort events by time before printing if needed
         def extract_time(event):
@@ -246,7 +254,10 @@ def output_results(processes, algorithm, events, output_filename, quantum):
         processes = sorted(processes, key=lambda processes: processes.name)
         # Print metrics after events
         for process in processes:
-            f.write(f"{process.name} wait {process.waiting_time} turnaround {process.turnaround_time} response {process.response_time}\n")
+            if process.finish_time == None:
+                f.write(f"{process.name} did not finish\n")
+            else: 
+                f.write(f"{process.name} wait {process.waiting_time} turnaround {process.turnaround_time} response {process.response_time}\n")
 
 
 def print_type_schedulers(algorithm):
@@ -275,7 +286,7 @@ def main(input_filename):
     calculate_metrics(processes)
     
     #TODO: change to out when submitting, keep out2 for testing
-    output_filename = input_filename.replace('.in', '.out2')
+    output_filename = input_filename.replace('.in', '.out')
     
     output_results(processes, algorithm, events, output_filename, quantum)
     
