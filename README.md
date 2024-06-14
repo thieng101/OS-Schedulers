@@ -3,7 +3,7 @@
 ## Team Member
 - Hong Thy Nguyen
 - Diego Aguirre
-
+- Kota Ramsey
 ## Description
 This project simulates different process scheduling algorithms including First-Come First-Served (FCFS), Preemptive Shortest Job First (SJF), and Round Robin (RR). The results are displayed in a Tkinter-based GUI, showing the events and process metrics for each scheduler.
 
