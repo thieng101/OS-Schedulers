@@ -2,6 +2,7 @@
 
 ## Team Member
 - Hong Thy Nguyen
+- Diego Aguirre
 
 ## Description
 This project simulates different process scheduling algorithms including First-Come First-Served (FCFS), Preemptive Shortest Job First (SJF), and Round Robin (RR). The results are displayed in a Tkinter-based GUI, showing the events and process metrics for each scheduler.
@@ -47,7 +48,10 @@ This project simulates different process scheduling algorithms including First-C
     Select the input file:
     A file dialog will appear. Select the input file with the `.in` extension.
 
-4. View the results:
+   ###NOTE
+   Running the UI_OS.py won't generate an output file, only displaying in the window.
+
+5. View the results:
     The scheduling results will be displayed in a tabbed interface. Each tab corresponds to a scheduler and shows the events and process metrics.
 
 
