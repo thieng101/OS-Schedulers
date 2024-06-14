@@ -286,7 +286,7 @@ def main(input_filename):
     calculate_metrics(processes)
     
     #TODO: change to out when submitting, keep out2 for testing
-    output_filename = input_filename.replace('.in', '.out')
+    output_filename = input_filename.replace('.in', '.out2')
     
     output_results(processes, algorithm, events, output_filename, quantum)
     
