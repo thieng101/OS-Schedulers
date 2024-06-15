@@ -43,13 +43,13 @@ This project simulates different process scheduling algorithms including First-C
 
 3. Run the UI script (the file creating UI for the schedulers):
     ```bash
-    python3 UI_OS.py
+    python3 ui_os.py
     ```
     Select the input file:
     A file dialog will appear. Select the input file with the `.in` extension.
 
    ###NOTE
-   Running the UI_OS.py won't generate an output file, only displaying in the window.
+   Running the ui_os.py won't generate an output file, only displaying in the window.
 
 5. View the results:
     The scheduling results will be displayed in a tabbed interface. Each tab corresponds to a scheduler and shows the events and process metrics.
