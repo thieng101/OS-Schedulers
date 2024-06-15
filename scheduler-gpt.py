@@ -1,4 +1,4 @@
-#Team Member: Hong Thy Nguyen
+#Team Member: Hong Thy Nguyen, Diego Aguirre, Kota Ramsey
 import heapq
 class Process:
     def __init__(self, name, arrival, burst):
