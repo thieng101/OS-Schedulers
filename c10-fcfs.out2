@@ -29,12 +29,8 @@ Time 40 : P06 finished
 Time 40 : P08 selected (burst 4)
 Time 44 : P08 finished
 Time 44 : P09 selected (burst 7)
-Time 51 : P09 finished
-Time 51 : Idle
-Time 52 : Idle
-Time 53 : Idle
-Time 54 : Idle
-Finished at time 55
+Time 50 : P09 did not finish
+Finished at time 51
 
 P01 wait 0 turnaround 5 response 0
 P02 wait 4 turnaround 13 response 4
@@ -44,5 +40,5 @@ P05 wait 11 turnaround 19 response 11
 P06 wait 13 turnaround 17 response 13
 P07 wait 17 turnaround 22 response 17
 P08 wait 15 turnaround 19 response 15
-P09 wait 14 turnaround 21 response 14
+P09 did not finish
 P10 wait 21 turnaround 23 response 21

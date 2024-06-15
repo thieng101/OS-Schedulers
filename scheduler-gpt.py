@@ -50,9 +50,6 @@ def fifo_scheduler(processes, total_run_time):
     current_time = 0
     events = []
 
-    # Human Code:
-    # The processes are sorted by arrival time before being sent to the scheduler
-    # If no process has arrived yet, we have to wait
     for process in processes:
         if current_time < process.arrival:
             # Log idle until the process arrives if there is a gap
@@ -68,12 +65,16 @@ def fifo_scheduler(processes, total_run_time):
         
         # Update current time after the process finishes
         current_time += process.burst
-        process.finish_time = current_time
-        process.turnaround_time = process.finish_time - process.arrival
-        process.waiting_time = process.start_time - process.arrival
-        
-        # Log process completion
-        events.append(f"Time {process.finish_time} : {process.name} finished")
+        if current_time > total_run_time:
+            process.finish_time = None  # Process did not finish within the total run time
+            events.append(f"Time {total_run_time} : {process.name} did not finish")
+            break
+        else:
+            process.finish_time = current_time
+            process.turnaround_time = process.finish_time - process.arrival
+            process.waiting_time = process.start_time - process.arrival
+            # Log process completion
+            events.append(f"Time {process.finish_time} : {process.name} finished")
     
     # Log final idle time if necessary
     while current_time < total_run_time:
