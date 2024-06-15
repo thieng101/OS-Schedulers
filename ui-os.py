@@ -213,7 +213,7 @@ def run_scheduler(input_filename):
 def display_results_in_table(results):
     root = tk.Tk()
     root.title("Scheduling Results")
-    root.geometry("1400x600")
+    root.geometry("1400x400")
 
     notebook = ttk.Notebook(root)
     notebook.pack(expand=1, fill="both")
@@ -222,18 +222,18 @@ def display_results_in_table(results):
         frame = ttk.Frame(notebook)
         notebook.add(frame, text=scheduler)
 
-        events_label = ttk.Label(frame, text="Events", font=('Arial', 12, 'bold'))
+        events_label = ttk.Label(frame, text="Overview of Processes", font=('Arial', 12, 'bold'))
         events_label.pack(pady=10)
 
         events_tree = ttk.Treeview(frame, columns=("Event"), show='headings')
-        events_tree.pack(side=tk.LEFT, expand=1, fill='both')
+        events_tree.pack(side=tk.LEFT, expand=0, fill='both')
         events_tree.heading("Event", text="Event")
 
         for event in events:
             events_tree.insert('', 'end', values=(event,))
 
-        process_label = ttk.Label(frame, text="Processes", font=('Arial', 12, 'bold'))
-        process_label.pack(pady=10)
+        # process_label = ttk.Label(frame, text="Processes", font=('Arial', 12, 'bold'))
+        # process_label.pack(pady=10)
 
         process_tree = ttk.Treeview(frame, columns=("Name", "Arrival", "Burst", "Start", "Finish", "Response", "Waiting", "Turnaround"), show='headings')
         process_tree.pack(side=tk.RIGHT, expand=1, fill='both')

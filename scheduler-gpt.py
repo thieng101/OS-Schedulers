@@ -286,8 +286,8 @@ def main(input_filename):
         events = round_robin_scheduler(processes, quantum, total_run_time)
     calculate_metrics(processes)
     
-    #TODO: change to out when submitting, keep out2 for testing
-    output_filename = input_filename.replace('.in', '.out2')
+    #change to out2 for testing
+    output_filename = input_filename.replace('.in', '.out')
     
     output_results(processes, algorithm, events, output_filename, quantum)
     

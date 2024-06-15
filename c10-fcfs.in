@@ -1,5 +1,5 @@
 processcount 10	# Read 10 processes
-runfor 50	# Run for 55 time units
+runfor 55	# Run for 55 time units
 use fcfs	# Can be fcfs, sjf, or rr
 process name P01 arrival 0 burst 5
 process name P02 arrival 5 burst 9
